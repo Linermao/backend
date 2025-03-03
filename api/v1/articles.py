@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from models.article import Article
-from services.article_service import create_article, get_article, get_all_articles
+from services.article_service import create_article, get_article, get_all_articles, get_articles_num
+from typing import Optional
 
 router = APIRouter()
 
@@ -9,11 +10,14 @@ router = APIRouter()
 #     return await create_article(article)
 
 @router.get("/articles")
-async def get_article_endpoint(article_id: str = None):
-    if article_id:
-        # 如果带有 article_id 参数，获取特定文章
-        return await get_article(article_id)
-    else:
-        # 如果没有带 article_id 参数，返回所有文章
-        return await get_all_articles()
+async def get_article_endpoint(start: int = 0, limit: int = 0):
+    return await get_all_articles(start, limit)
+
+@router.get("/articles/num")
+async def get_article_endpoint():
+    return await get_articles_num()
+
+@router.get("/articles/{article_title}")
+async def get_article_endpoint(article_title: str):
+    return await get_article(article_title)
 
