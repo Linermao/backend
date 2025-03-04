@@ -1,63 +1,51 @@
-from bson import ObjectId
-from fastapi import HTTPException
-
-from models.article import Article
+import base64
 from core.database import articles_collection
-
-import base64
-
-async def create_article(article: Article):
-    article_dict = article.dict()
-    result = await articles_collection.insert_one(article_dict)
-    return {**article_dict, "_id": str(result.inserted_id)}
-
-# async def get_article(article_id: str):
-#     article = await articles_collection.find_one({"_id": ObjectId(article_id)})
-#     if not article:
-#         raise HTTPException(status_code=404, detail="Article not found")
-#     article["_id"] = str(article["_id"])
-#     return article
-
-import base64
-from fastapi import HTTPException
 from pymongo.errors import PyMongoError
+from services.handle_error import ErrorHandler
 
-async def get_article(title: str):
+async def get_article(title: str) -> dict:
     try:
-        # 查询文章
         article = await articles_collection.find_one({"title": str(title)})
         
-        # 如果找不到文章
         if not article:
-            raise HTTPException(status_code=404, detail="Article not found")
-        
-        # 解码内容
+            ErrorHandler.handle_not_found_error()
+
         article["_id"] = str(article["_id"])
-        
-        try:
-            # 尝试解码内容
-            article["content"] = base64.b64decode(article["content"]).decode('utf-8')
-        except base64.binascii.Error as e:
-            # 如果 Base64 解码失败，返回错误
-            raise HTTPException(status_code=400, detail="Base64 decoding error: Invalid encoding")
+
+        if isinstance(article.get("content"), (str, bytes)):  # 确保content字段是有效的
+            try:
+                article["content"] = base64.b64decode(article["content"]).decode('utf-8')
+            except base64.binascii.Error:
+                ErrorHandler.handle_base64_error()
+        else:
+            ErrorHandler.handle_invalid_content_error()
         
         return article
     except PyMongoError as e:
-        # 捕获 MongoDB 的错误
-        raise HTTPException(status_code=500, detail="Database error occurred")
+        ErrorHandler.handle_mongodb_error(e)
     except Exception as e:
-        # 捕获其他未知错误
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        ErrorHandler.handle_unexpected_error(e)
 
 
-async def get_all_articles(start=0, limit=0):
-    articles = []
-    cursor = articles_collection.find().skip(start).limit(limit)
-    async for article in cursor:
-        article["_id"] = str(article["_id"])
-        articles.append(article)
-    return articles
+async def get_all_articles(start: int = 0, limit: int = 100) -> list:
+    try:
+        articles = []
+        cursor = articles_collection.find().skip(start).limit(limit)
+        async for article in cursor:
+            article["_id"] = str(article["_id"])
+            articles.append(article)
+        return articles
+    except PyMongoError as e:
+        ErrorHandler.handle_mongodb_error(e)
+    except Exception as e:
+        ErrorHandler.handle_unexpected_error(e)
 
-async def get_articles_num():
-    num = await articles_collection.count_documents({})
-    return {"articles_num": num}
+
+async def get_articles_num() -> dict:
+    try:
+        num = await articles_collection.count_documents({})
+        return {"articles_num": num}
+    except PyMongoError as e:
+        ErrorHandler.handle_mongodb_error(e)
+    except Exception as e:
+        ErrorHandler.handle_unexpected_error(e)
