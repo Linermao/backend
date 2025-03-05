@@ -1,11 +1,12 @@
 import base64
-from core.database import articles_collection
+from core.database import Database
 from pymongo.errors import PyMongoError
 from services.handle_error import ErrorHandler
 
 async def get_article(title: str) -> dict:
     try:
-        article = await articles_collection.find_one({"title": str(title)})
+        collection = Database.get_collection('articles')
+        article = await collection.find_one({"title": str(title)})
         
         if not article:
             ErrorHandler.handle_not_found_error()
@@ -29,8 +30,9 @@ async def get_article(title: str) -> dict:
 
 async def get_all_articles(start: int = 0, limit: int = 100) -> list:
     try:
+        collection = Database.get_collection('articles')
         articles = []
-        cursor = articles_collection.find().skip(start).limit(limit)
+        cursor = collection.find().skip(start).limit(limit)
         async for article in cursor:
             article["_id"] = str(article["_id"])
             articles.append(article)
@@ -43,7 +45,8 @@ async def get_all_articles(start: int = 0, limit: int = 100) -> list:
 
 async def get_articles_num() -> dict:
     try:
-        num = await articles_collection.count_documents({})
+        collection = Database.get_collection('articles')
+        num = await collection.count_documents({})
         return {"articles_num": num}
     except PyMongoError as e:
         ErrorHandler.handle_mongodb_error(e)

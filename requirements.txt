@@ -1,6 +1,6 @@
-fastapi
 uvicorn
 python-dotenv
-motor
 dnspython
-uvicorn
+fastapi
+starlette
+motor
