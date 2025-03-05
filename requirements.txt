@@ -4,3 +4,5 @@ dnspython
 fastapi
 starlette
 motor
+pydantic
+pydantic-settings
