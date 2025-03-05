@@ -1,11 +1,14 @@
 import base64
-from core.database import Database
+from core.database import get_collection
 from pymongo.errors import PyMongoError
 from services.handle_error import ErrorHandler
+from core.config import config
+
+
 
 async def get_article(title: str) -> dict:
     try:
-        collection = Database.get_collection('articles')
+        collection = get_collection('articles')
         article = await collection.find_one({"title": str(title)})
         
         if not article:
@@ -30,7 +33,7 @@ async def get_article(title: str) -> dict:
 
 async def get_all_articles(start: int = 0, limit: int = 100) -> list:
     try:
-        collection = Database.get_collection('articles')
+        collection = get_collection('articles')
         articles = []
         cursor = collection.find().skip(start).limit(limit)
         async for article in cursor:
@@ -45,7 +48,7 @@ async def get_all_articles(start: int = 0, limit: int = 100) -> list:
 
 async def get_articles_num() -> dict:
     try:
-        collection = Database.get_collection('articles')
+        collection = get_collection('articles')
         num = await collection.count_documents({})
         return {"articles_num": num}
     except PyMongoError as e:
