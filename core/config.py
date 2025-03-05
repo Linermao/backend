@@ -10,5 +10,6 @@ class Configs(BaseSettings):
     MONGODB_URL: str  = os.getenv("MONGODB_URL")
     class Config:
         env_file = ".env"
+        extra = 'allow'
 
 config = Configs()

@@ -1,16 +1,17 @@
 import base64
+from urllib.parse import unquote
 from core.database import get_collection
 from pymongo.errors import PyMongoError
 from services.handle_error import ErrorHandler
 from core.config import config
 
-
-
 async def get_article(title: str) -> dict:
     try:
+        # 解码路径
+        decoded_name = unquote(title)
         collection = get_collection('articles')
-        article = await collection.find_one({"title": str(title)})
-        
+        article = await collection.find_one({"title": decoded_name})
+
         if not article:
             ErrorHandler.handle_not_found_error()
 
