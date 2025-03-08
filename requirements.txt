@@ -6,3 +6,6 @@ starlette
 motor
 pydantic
 pydantic-settings
+passlib[bcrypt]
+pyjwt
+bcrypt==4.0.1

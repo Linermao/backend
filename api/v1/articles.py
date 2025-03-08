@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from services.article_service import get_article, get_all_articles, get_articles_num
+from services.article_service import get_article, get_all_articles, get_articles_num, post_article
+from models.article import Article
 
 router = APIRouter()
 
@@ -18,3 +19,7 @@ async def get_articles_num_endpoint():
 @router.get("/articles/{article_title}")
 async def get_article_endpoint(article_title: str):
     return await get_article(article_title)
+
+@router.post("/articles/upload")
+async def post_article_endpoint(article: Article):
+    return await post_article(article)

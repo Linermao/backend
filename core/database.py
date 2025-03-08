@@ -13,9 +13,9 @@ def get_db_client():
     client = AsyncIOMotorClient(config.MONGODB_URL)
     return client
 
-def get_collection(collection_name: str):
+def get_collection(database_name: str, collection_name: str):
     """ 获取指定的 MongoDB 集合 """
     client = get_db_client() 
-    database = client.get_database(config.MONGODB_NAME)  
+    database = client.get_database(database_name)  
     collection = database.get_collection(collection_name) 
     return collection
