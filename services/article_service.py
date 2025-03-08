@@ -23,7 +23,7 @@ async def get_article(title: str) -> dict:
         article["_id"] = str(article["_id"])
 
         if isinstance(article.get("content"), (str, bytes)):  # 确保content字段是有效的
-            article["content"] = encode_base64(article["content"])
+            article["content"] = decode_base64(article["content"])
         else:
             ErrorHandler.handle_invalid_content_error()
         
